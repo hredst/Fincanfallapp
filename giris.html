@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fincan — Giriş Yap</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;1,300;1,400&display=swap');
+
+:root {
+  --bg: #09060f;
+  --surface: #110d1a;
+  --surface2: #1a1426;
+  --border: #2a1f3d;
+  --accent: #c084fc;
+  --accent2: #e879f9;
+  --text: #f3e8ff;
+  --text-dim: #9d7ec7;
+  --error: #f87171;
+  --success: #86efac;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Pro', serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow-x: hidden;
+  padding: 24px;
+}
+
+.bg-layer { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: drift 12s ease-in-out infinite alternate;
+}
+.orb1 { width: 500px; height: 500px; background: rgba(192,132,252,0.08); top: -200px; left: -100px; }
+.orb2 { width: 400px; height: 400px; background: rgba(232,121,249,0.06); bottom: -150px; right: -100px; animation-delay: -4s; }
+.orb3 { width: 300px; height: 300px; background: rgba(245,158,11,0.05); top: 40%; left: 50%; animation-delay: -8s; }
+@keyframes drift {
+  from { transform: translate(0,0) scale(1); }
+  to { transform: translate(40px,30px) scale(1.1); }
+}
+
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star {
+  position: absolute; width: 2px; height: 2px;
+  background: white; border-radius: 50%;
+  animation: twinkle var(--d,3s) ease-in-out infinite; opacity: 0;
+}
+@keyframes twinkle { 0%,100% { opacity:0; } 50% { opacity:var(--o,0.6); } }
+
+.container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 440px;
+  animation: fadeUp 0.8s cubic-bezier(.16,1,.3,1) both;
+}
+
+/* Logo */
+.logo {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.logo-icon {
+  font-size: 48px;
+  display: block;
+  filter: drop-shadow(0 0 20px rgba(192,132,252,0.5));
+  animation: float 4s ease-in-out infinite;
+  margin-bottom: 6px;
+}
+@keyframes float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }
+
+.logo h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  background: linear-gradient(135deg, #e9d5ff, #c084fc, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.logo p {
+  font-size: 0.85rem;
+  color: var(--text-dim);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+/* Card */
+.card {
+  background: linear-gradient(135deg, var(--surface), var(--surface2));
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 36px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(192,132,252,0.1);
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+/* Tabs */
+.tabs {
+  display: flex;
+  background: rgba(0,0,0,0.3);
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border);
+}
+.tab {
+  flex: 1;
+  padding: 10px;
+  text-align: center;
+  border-radius: 9px;
+  cursor: pointer;
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  color: var(--text-dim);
+  transition: all 0.3s;
+  border: none;
+  background: transparent;
+}
+.tab.active {
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: white;
+  box-shadow: 0 4px 15px rgba(124,58,237,0.3);
+}
+
+/* Form panels */
+.panel { display: none; }
+.panel.active { display: block; animation: fadeUp 0.4s ease both; }
+
+/* Input group */
+.input-group { margin-bottom: 18px; }
+.input-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.2em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  display: block;
+}
+.input-field {
+  width: 100%;
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: 'Crimson Pro', serif;
+  font-size: 1rem;
+  padding: 13px 16px;
+  outline: none;
+  transition: all 0.3s;
+}
+.input-field::placeholder { color: #3d2d5c; font-style: italic; }
+.input-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(192,132,252,0.1);
+}
+.input-field.error { border-color: var(--error); }
+
+/* Password wrapper */
+.pass-wrap { position: relative; }
+.pass-toggle {
+  position: absolute;
+  right: 14px; top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  font-size: 16px;
+  padding: 4px;
+  transition: color 0.2s;
+}
+.pass-toggle:hover { color: var(--accent); }
+
+/* Main button */
+.btn-main {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7, #c084fc);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-family: 'Playfair Display', serif;
+  font-size: 1rem;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 6px 24px rgba(124,58,237,0.4);
+  margin-top: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.btn-main::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+  transform: translateX(-100%) skewX(-15deg);
+  transition: transform 0.5s;
+}
+.btn-main:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(124,58,237,0.5); }
+.btn-main:hover::before { transform: translateX(200%) skewX(-15deg); }
+.btn-main:active { transform: translateY(0); }
+.btn-main:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* Divider */
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 20px 0;
+}
+.or-line { flex: 1; height: 1px; background: var(--border); }
+.or-text { font-size: 0.78rem; color: #3d2d5c; letter-spacing: 0.1em; }
+
+/* Google button */
+.btn-google {
+  width: 100%;
+  padding: 13px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--text-dim);
+  font-family: 'Crimson Pro', serif;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.btn-google:hover {
+  border-color: var(--accent);
+  color: var(--text);
+  background: rgba(192,132,252,0.05);
+}
+.google-icon {
+  width: 18px; height: 18px;
+  background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'%3E%3Cpath fill='%23EA4335' d='M24 9.5c3.5 0 6.6 1.2 9 3.2l6.7-6.7C35.7 2.5 30.2 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.8 6C12.3 13 17.7 9.5 24 9.5z'/%3E%3Cpath fill='%234285F4' d='M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4 7.1-10 7.1-17z'/%3E%3Cpath fill='%23FBBC05' d='M10.4 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.8-6A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.7l7.8-6z'/%3E%3Cpath fill='%2334A853' d='M24 48c6.2 0 11.4-2 15.2-5.5l-7.5-5.8c-2 1.4-4.6 2.2-7.7 2.2-6.3 0-11.6-4.2-13.6-10l-7.8 6C6.6 42.6 14.6 48 24 48z'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+
+/* Forgot password */
+.forgot {
+  text-align: right;
+  margin-top: -10px;
+  margin-bottom: 16px;
+}
+.forgot a {
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-style: italic;
+  transition: color 0.2s;
+}
+.forgot a:hover { color: var(--accent); }
+
+/* Terms */
+.terms {
+  font-size: 0.75rem;
+  color: #3d2d5c;
+  text-align: center;
+  margin-top: 14px;
+  line-height: 1.5;
+}
+.terms a { color: var(--text-dim); text-decoration: none; }
+.terms a:hover { color: var(--accent); }
+
+/* Toast */
+.toast {
+  display: none;
+  border-radius: 10px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  font-size: 0.88rem;
+  font-style: italic;
+  text-align: center;
+  animation: fadeUp 0.3s ease both;
+}
+.toast.error { display: block; background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); color: var(--error); }
+.toast.success { display: block; background: rgba(134,239,172,0.1); border: 1px solid rgba(134,239,172,0.3); color: var(--success); }
+
+/* Back to app */
+.back-link {
+  text-align: center;
+  margin-top: 20px;
+}
+.back-link a {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  text-decoration: none;
+  font-style: italic;
+  transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.back-link a:hover { color: var(--accent); }
+
+/* Free badge */
+.free-badge {
+  background: rgba(192,132,252,0.1);
+  border: 1px solid rgba(192,132,252,0.2);
+  border-radius: 20px;
+  padding: 8px 16px;
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+.free-badge strong { color: var(--accent); }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+
+@media (max-width: 480px) {
+  .card { padding: 24px 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+<div class="stars" id="stars"></div>
+
+<div class="container">
+
+  <div class="logo">
+    <span class="logo-icon">☕</span>
+    <h1>Fincan</h1>
+    <p>Yapay zeka ile kahve falı</p>
+  </div>
+
+  <div class="card">
+
+    <div class="free-badge">
+      Ücretsiz üyelik ile günde <strong>2 fal</strong> hakkı kazanın ✨
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('giris')">Giriş Yap</button>
+      <button class="tab" onclick="switchTab('kayit')">Kayıt Ol</button>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Giriş Paneli -->
+    <div class="panel active" id="panel-giris">
+      <div class="input-group">
+        <span class="input-label">E-posta</span>
+        <input type="email" class="input-field" id="giris-email" placeholder="ornek@email.com" />
+      </div>
+      <div class="input-group">
+        <span class="input-label">Şifre</span>
+        <div class="pass-wrap">
+          <input type="password" class="input-field" id="giris-sifre" placeholder="Şifreniz" />
+          <button class="pass-toggle" onclick="togglePass('giris-sifre', this)">👁️</button>
+        </div>
+      </div>
+      <div class="forgot"><a href="#" onclick="forgotPassword()">Şifremi unuttum</a></div>
+      <button class="btn-main" onclick="girisYap()">✨ Giriş Yap</button>
+
+      <div class="or-divider">
+        <div class="or-line"></div>
+        <span class="or-text">VEYA</span>
+        <div class="or-line"></div>
+      </div>
+
+      <button class="btn-google" onclick="googleGiris()">
+        <span class="google-icon"></span>
+        Google ile Giriş Yap
+      </button>
+
+      <p class="terms">Giriş yaparak <a href="#">Kullanım Şartları</a>'nı ve <a href="#">Gizlilik Politikası</a>'nı kabul etmiş olursunuz.</p>
+    </div>
+
+    <!-- Kayıt Paneli -->
+    <div class="panel" id="panel-kayit">
+      <div class="input-group">
+        <span class="input-label">Adınız</span>
+        <input type="text" class="input-field" id="kayit-ad" placeholder="Adınız" maxlength="30" />
+      </div>
+      <div class="input-group">
+        <span class="input-label">E-posta</span>
+        <input type="email" class="input-field" id="kayit-email" placeholder="ornek@email.com" />
+      </div>
+      <div class="input-group">
+        <span class="input-label">Şifre</span>
+        <div class="pass-wrap">
+          <input type="password" class="input-field" id="kayit-sifre" placeholder="En az 6 karakter" />
+          <button class="pass-toggle" onclick="togglePass('kayit-sifre', this)">👁️</button>
+        </div>
+      </div>
+      <div class="input-group">
+        <span class="input-label">Şifre Tekrar</span>
+        <div class="pass-wrap">
+          <input type="password" class="input-field" id="kayit-sifre2" placeholder="Şifrenizi tekrar girin" />
+          <button class="pass-toggle" onclick="togglePass('kayit-sifre2', this)">👁️</button>
+        </div>
+      </div>
+      <button class="btn-main" onclick="kayitOl()">🌙 Hesap Oluştur</button>
+
+      <div class="or-divider">
+        <div class="or-line"></div>
+        <span class="or-text">VEYA</span>
+        <div class="or-line"></div>
+      </div>
+
+      <button class="btn-google" onclick="googleGiris()">
+        <span class="google-icon"></span>
+        Google ile Kayıt Ol
+      </button>
+
+      <p class="terms">Kayıt olarak <a href="#">Kullanım Şartları</a>'nı ve <a href="#">Gizlilik Politikası</a>'nı kabul etmiş olursunuz.</p>
+    </div>
+
+  </div>
+
+  <div class="back-link">
+    <a href="kahve-fali.html">← Falıma dön</a>
+  </div>
+
+</div>
+
+<script>
+// Stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*4}s;--o:${0.2+Math.random()*0.6};animation-delay:${Math.random()*4}s`;
+  starsEl.appendChild(s);
+}
+
+// Tab switch
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='giris') || (i===1 && tab==='kayit'));
+  });
+  document.getElementById('panel-giris').classList.toggle('active', tab==='giris');
+  document.getElementById('panel-kayit').classList.toggle('active', tab==='kayit');
+  hideToast();
+}
+
+// Toggle password visibility
+function togglePass(id, btn) {
+  const input = document.getElementById(id);
+  if (input.type === 'password') {
+    input.type = 'text';
+    btn.textContent = '🙈';
+  } else {
+    input.type = 'password';
+    btn.textContent = '👁️';
+  }
+}
+
+// Toast
+function showToast(msg, type='error') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type}`;
+}
+function hideToast() {
+  document.getElementById('toast').className = 'toast';
+}
+
+// Enter key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const activePanel = document.querySelector('.panel.active').id;
+    if (activePanel === 'panel-giris') girisYap();
+    else kayitOl();
+  }
+});
+
+// ── Giriş ──
+function girisYap() {
+  const email = document.getElementById('giris-email').value.trim();
+  const sifre = document.getElementById('giris-sifre').value;
+
+  if (!email || !sifre) {
+    showToast('Lütfen tüm alanları doldurun.');
+    return;
+  }
+  if (!validEmail(email)) {
+    showToast('Geçerli bir e-posta adresi girin.');
+    return;
+  }
+
+  // Firebase Auth buraya bağlanacak
+  showToast('✨ Giriş yapılıyor...', 'success');
+  setTimeout(() => {
+    // Başarılı girişte fal sayfasına yönlendir
+    window.location.href = 'kahve-fali.html';
+  }, 1200);
+}
+
+// ── Kayıt ──
+function kayitOl() {
+  const ad = document.getElementById('kayit-ad').value.trim();
+  const email = document.getElementById('kayit-email').value.trim();
+  const sifre = document.getElementById('kayit-sifre').value;
+  const sifre2 = document.getElementById('kayit-sifre2').value;
+
+  if (!ad || !email || !sifre || !sifre2) {
+    showToast('Lütfen tüm alanları doldurun.');
+    return;
+  }
+  if (!validEmail(email)) {
+    showToast('Geçerli bir e-posta adresi girin.');
+    return;
+  }
+  if (sifre.length < 6) {
+    showToast('Şifre en az 6 karakter olmalıdır.');
+    return;
+  }
+  if (sifre !== sifre2) {
+    showToast('Şifreler eşleşmiyor.');
+    return;
+  }
+
+  // Firebase Auth buraya bağlanacak
+  showToast('🌙 Hesabınız oluşturuluyor...', 'success');
+  setTimeout(() => {
+    window.location.href = 'kahve-fali.html';
+  }, 1200);
+}
+
+// ── Google ──
+function googleGiris() {
+  // Firebase Google Auth buraya bağlanacak
+  showToast('Google ile giriş yapılıyor...', 'success');
+  setTimeout(() => {
+    window.location.href = 'kahve-fali.html';
+  }, 1200);
+}
+
+// ── Şifremi unuttum ──
+function forgotPassword() {
+  const email = document.getElementById('giris-email').value.trim();
+  if (!email) {
+    showToast('Lütfen önce e-posta adresinizi girin.');
+    return;
+  }
+  // Firebase resetPassword buraya bağlanacak
+  showToast('✉️ Şifre sıfırlama e-postası gönderildi!', 'success');
+}
+
+function validEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+</script>
+</body>
+</html>
