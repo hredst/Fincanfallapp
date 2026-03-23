@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hatice Nine — Profil Tamamla</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --bg: #0d0608;
+  --surface: #1a0d10;
+  --surface2: #241016;
+  --border: #3d1f28;
+  --gold: #c9a84c;
+  --gold2: #e8c97a;
+  --red: #8b1a2a;
+  --red2: #b02235;
+  --text: #f5e6d0;
+  --text-dim: #a08060;
+  --error: #f87171;
+  --success: #86efac;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Text', serif;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 20%, rgba(139,26,42,0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.08) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.candles-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.candle-light { position: absolute; border-radius: 50%; animation: flicker var(--d,3s) ease-in-out infinite alternate; }
+.cl1 { width: 300px; height: 300px; background: radial-gradient(circle, rgba(255,140,66,0.12) 0%, transparent 70%); bottom: -50px; left: -50px; --d: 2.3s; }
+.cl2 { width: 250px; height: 250px; background: radial-gradient(circle, rgba(255,140,66,0.10) 0%, transparent 70%); bottom: -30px; right: -30px; --d: 3.1s; }
+@keyframes flicker { 0% { transform:scale(1); opacity:.8; } 100% { transform:scale(1.15); opacity:1; } }
+
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star { position: absolute; width: 1.5px; height: 1.5px; background: var(--gold2); border-radius: 50%; animation: twinkle var(--d,3s) ease-in-out infinite; opacity: 0; }
+@keyframes twinkle { 0%,100% { opacity:0; } 50% { opacity:var(--o,.5); } }
+
+.container { position: relative; z-index: 1; width: 100%; max-width: 460px; animation: fadeUp 0.9s cubic-bezier(.16,1,.3,1) both; }
+
+/* Header */
+.header { text-align: center; margin-bottom: 24px; }
+.hatice-wrap { text-align: center; margin-bottom: 12px; }
+.hatice-circle { width: 110px; height: 110px; border-radius: 50%; border: 3px solid var(--gold); box-shadow: 0 0 25px rgba(201,168,76,0.4); overflow: hidden; margin: 0 auto 8px; }
+.hatice-img { width: 100%; height: 100%; object-fit: cover; object-position: center top; filter: sepia(10%) saturate(1.1); }
+.hatice-isim { font-family: 'Cinzel', serif; font-size: 0.68rem; letter-spacing: 0.25em; color: var(--gold); opacity: 0.8; }
+.app-name { font-family: 'Cinzel', serif; font-size: 1.6rem; font-weight: 700; color: var(--gold); letter-spacing: 0.12em; text-shadow: 0 0 30px rgba(201,168,76,0.4); margin-bottom: 4px; }
+.app-sub { font-size: 0.85rem; color: var(--text-dim); font-style: italic; }
+
+/* Progress */
+.progress-wrap { margin-bottom: 28px; }
+.progress-steps { display: flex; justify-content: center; gap: 8px; margin-bottom: 10px; }
+.step-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Cinzel', serif; font-size: 0.75rem;
+  color: var(--text-dim); background: var(--surface);
+  transition: all 0.4s;
+}
+.step-dot.active { border-color: var(--gold); color: var(--gold); box-shadow: 0 0 12px rgba(201,168,76,0.3); }
+.step-dot.done { border-color: var(--success); color: var(--success); background: rgba(134,239,172,0.08); }
+.step-line { flex: 1; height: 1px; background: var(--border); align-self: center; max-width: 40px; transition: background 0.4s; }
+.step-line.done { background: var(--gold); }
+.progress-text { text-align: center; font-size: 0.78rem; color: var(--text-dim); font-style: italic; }
+
+/* Kart */
+.card { background: linear-gradient(160deg, var(--surface) 0%, var(--surface2) 100%); border: 1px solid var(--border); border-radius: 4px; padding: 32px 36px; box-shadow: 0 20px 60px rgba(0,0,0,0.7), inset 0 1px 0 rgba(201,168,76,0.15); position: relative; overflow: hidden; }
+.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), var(--gold2), var(--gold), transparent); }
+
+/* Adım panelleri */
+.adim { display: none; animation: fadeUp 0.4s ease both; }
+.adim.active { display: block; }
+
+.adim-baslik { font-family: 'Cinzel', serif; font-size: 1rem; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 6px; }
+.adim-aciklama { font-size: 0.88rem; color: var(--text-dim); font-style: italic; margin-bottom: 22px; line-height: 1.5; }
+
+/* Input */
+.input-group { margin-bottom: 16px; }
+.input-label { font-size: 0.68rem; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; margin-bottom: 7px; display: block; font-family: 'Cinzel', serif; }
+.input-field { width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border); border-radius: 3px; color: var(--text); font-family: 'Crimson Text', serif; font-size: 1.05rem; padding: 12px 14px; outline: none; transition: all 0.3s; }
+.input-field::placeholder { color: #4a2a20; font-style: italic; }
+.input-field:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(201,168,76,0.1); }
+select.input-field { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23c9a84c' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+select.input-field option { background: #1a0d10; }
+
+/* Doğum tarihi row */
+.row-3 { display: grid; grid-template-columns: 2fr 2fr 3fr; gap: 10px; }
+
+/* Cinsiyet seçim kartları */
+.cinsiyet-group { display: flex; gap: 10px; margin-bottom: 16px; }
+.cinsiyet-kart {
+  flex: 1; padding: 14px 8px; text-align: center;
+  border: 1px solid var(--border); border-radius: 3px;
+  cursor: pointer; transition: all 0.3s;
+  background: rgba(0,0,0,0.3);
+  font-size: 0.82rem; color: var(--text-dim);
+  font-family: 'Cinzel', serif; letter-spacing: 0.05em;
+}
+.cinsiyet-kart .c-icon { font-size: 28px; display: block; margin-bottom: 6px; }
+.cinsiyet-kart:hover { border-color: var(--gold); color: var(--gold); }
+.cinsiyet-kart.selected { border-color: var(--gold); background: rgba(201,168,76,0.1); color: var(--gold2); box-shadow: 0 0 12px rgba(201,168,76,0.2); }
+
+/* İlişki durumu seçenekleri */
+.iliski-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+.iliski-kart {
+  padding: 12px 10px; text-align: center;
+  border: 1px solid var(--border); border-radius: 3px;
+  cursor: pointer; transition: all 0.3s;
+  background: rgba(0,0,0,0.3);
+  font-size: 0.82rem; color: var(--text-dim);
+  font-family: 'Crimson Text', serif;
+}
+.iliski-kart .i-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+.iliski-kart:hover { border-color: var(--gold); color: var(--gold); }
+.iliski-kart.selected { border-color: var(--red2); background: rgba(139,26,42,0.15); color: var(--gold2); }
+
+/* Toast */
+.toast { display: none; border-radius: 3px; padding: 11px 14px; margin-bottom: 14px; font-size: 0.9rem; font-style: italic; text-align: center; border-left: 3px solid; }
+.toast.error { display: block; background: rgba(139,26,42,0.2); border-color: var(--error); color: #fca5a5; }
+.toast.success { display: block; background: rgba(134,239,172,0.08); border-color: var(--success); color: var(--success); }
+
+/* Buton */
+.btn-main { width: 100%; padding: 14px; background: linear-gradient(135deg, #6b0f1c, var(--red), var(--red2)); border: 1px solid rgba(201,168,76,0.3); border-radius: 3px; color: var(--gold2); font-family: 'Cinzel', serif; font-size: 0.85rem; letter-spacing: 0.15em; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 20px rgba(139,26,42,0.4); margin-top: 8px; }
+.btn-main:hover { transform: translateY(-1px); box-shadow: 0 6px 25px rgba(139,26,42,0.6); border-color: var(--gold); }
+.btn-main:active { transform: translateY(0); }
+.btn-main:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Tamamlandı ekranı */
+.tamam-ekrani { display: none; text-align: center; padding: 20px 0; }
+.tamam-ekrani.visible { display: block; animation: fadeUp 0.6s ease both; }
+.tamam-ikon { font-size: 56px; display: block; margin-bottom: 14px; }
+.tamam-baslik { font-family: 'Cinzel', serif; font-size: 1.1rem; color: var(--gold); margin-bottom: 10px; }
+.tamam-aciklama { font-size: 0.95rem; color: var(--text-dim); line-height: 1.7; font-style: italic; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@media (max-width: 480px) {
+  .card { padding: 24px 16px; }
+  .row-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .iliski-group { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="candles-bg">
+  <div class="candle-light cl1"></div>
+  <div class="candle-light cl2"></div>
+</div>
+<div class="stars" id="stars"></div>
+
+<div class="container">
+
+  <div class="hatice-wrap">
+    <div class="hatice-circle">
+      <img src="hatice-nine.png" alt="Hatice Nine" class="hatice-img"
+        onerror="this.parentElement.innerHTML='<span style=font-size:60px;line-height:110px>🔮</span>'" />
+    </div>
+    <p class="hatice-isim">✦ Hatice Nine ✦</p>
+  </div>
+
+  <div class="header">
+    <h1 class="app-name">HATİCE NİNE</h1>
+    <p class="app-sub" style="margin-bottom:0">Profilinizi tamamlayın</p>
+  </div>
+
+  <!-- Progress -->
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step-dot active" id="dot1">1</div>
+      <div class="step-line" id="line1"></div>
+      <div class="step-dot" id="dot2">2</div>
+      <div class="step-line" id="line2"></div>
+      <div class="step-dot" id="dot3">3</div>
+    </div>
+    <p class="progress-text" id="progressText">Adım 1 / 3 — Adınız</p>
+  </div>
+
+  <div class="card">
+
+    <div class="toast" id="toast"></div>
+
+    <!-- Adım 1: Ad -->
+    <div class="adim active" id="adim1">
+      <p class="adim-baslik">✦ Adınız Nedir?</p>
+      <p class="adim-aciklama">Hatice Nine sizi nasıl çağırsın?</p>
+      <div class="input-group">
+        <span class="input-label">Adınız</span>
+        <input type="text" class="input-field" id="p-ad" placeholder="Adınızı yazın..." maxlength="30" />
+      </div>
+      <button class="btn-main" onclick="adim1Ileri()">✦ DEVAM ET ✦</button>
+    </div>
+
+    <!-- Adım 2: Doğum Tarihi + Cinsiyet -->
+    <div class="adim" id="adim2">
+      <p class="adim-baslik">✦ Biraz Daha Tanışalım</p>
+      <p class="adim-aciklama">Bu bilgiler falınızın daha isabetli olmasını sağlar.</p>
+
+      <div class="input-group">
+        <span class="input-label">Doğum Tarihi</span>
+        <div class="row-3">
+          <select class="input-field" id="p-gun">
+            <option value="" disabled selected>Gün</option>
+            <script>for(let i=1;i<=31;i++) document.write(`<option value="${i}">${i}</option>`);</script>
+          </select>
+          <select class="input-field" id="p-ay">
+            <option value="" disabled selected>Ay</option>
+            <option value="1">Ocak</option>
+            <option value="2">Şubat</option>
+            <option value="3">Mart</option>
+            <option value="4">Nisan</option>
+            <option value="5">Mayıs</option>
+            <option value="6">Haziran</option>
+            <option value="7">Temmuz</option>
+            <option value="8">Ağustos</option>
+            <option value="9">Eylül</option>
+            <option value="10">Ekim</option>
+            <option value="11">Kasım</option>
+            <option value="12">Aralık</option>
+          </select>
+          <select class="input-field" id="p-yil">
+            <option value="" disabled selected>Yıl</option>
+            <script>for(let i=2010;i>=1940;i--) document.write(`<option value="${i}">${i}</option>`);</script>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <span class="input-label">Cinsiyet</span>
+        <div class="cinsiyet-group">
+          <div class="cinsiyet-kart" onclick="cinsiyetSec(this,'kadin')">
+            <span class="c-icon">👩</span>
+            Kadın
+          </div>
+          <div class="cinsiyet-kart" onclick="cinsiyetSec(this,'erkek')">
+            <span class="c-icon">👨</span>
+            Erkek
+          </div>
+          <div class="cinsiyet-kart" onclick="cinsiyetSec(this,'belirtmek-istemiyorum')">
+            <span class="c-icon">🌙</span>
+            Belirtmek İstemiyorum
+          </div>
+        </div>
+      </div>
+
+      <button class="btn-main" onclick="adim2Ileri()">✦ DEVAM ET ✦</button>
+    </div>
+
+    <!-- Adım 3: İlişki Durumu -->
+    <div class="adim" id="adim3">
+      <p class="adim-baslik">✦ İlişki Durumunuz?</p>
+      <p class="adim-aciklama">Aşk falı için önemli bir bilgi! 💕</p>
+
+      <div class="iliski-group">
+        <div class="iliski-kart" onclick="iliskiSec(this,'bekar')">
+          <span class="i-icon">🌹</span>
+          Bekar
+        </div>
+        <div class="iliski-kart" onclick="iliskiSec(this,'iliskisi-var')">
+          <span class="i-icon">💑</span>
+          İlişkisi Var
+        </div>
+        <div class="iliski-kart" onclick="iliskiSec(this,'nisanli')">
+          <span class="i-icon">💍</span>
+          Nişanlı
+        </div>
+        <div class="iliski-kart" onclick="iliskiSec(this,'evli')">
+          <span class="i-icon">👫</span>
+          Evli
+        </div>
+        <div class="iliski-kart" onclick="iliskiSec(this,'ayrilmis')">
+          <span class="i-icon">💔</span>
+          Ayrılmış
+        </div>
+        <div class="iliski-kart" onclick="iliskiSec(this,'karmasik')">
+          <span class="i-icon">😅</span>
+          Karmaşık
+        </div>
+      </div>
+
+      <button class="btn-main" id="btn-tamamla" onclick="profilTamamla()">✦ PROFİLİ TAMAMLA ✦</button>
+    </div>
+
+    <!-- Tamamlandı -->
+    <div class="tamam-ekrani" id="tamamEkrani">
+      <span class="tamam-ikon">🔮</span>
+      <p class="tamam-baslik">Hoş Geldiniz!</p>
+      <p class="tamam-aciklama">
+        Profiliniz tamamlandı.<br>
+        Hatice Nine sizi bekliyor...<br><br>
+        <strong style="color:var(--gold)">10 token</strong> hediye edildi! ☕
+      </p>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://nyficdvikmdnfvbtasmx.supabase.co',
+  'sb_publishable_83nlZ_hEU7c39NmNwV-meA_f712n4gb'
+);
+
+// Giriş kontrolü
+sb.auth.getSession().then(({ data }) => {
+  if (!data.session) { window.location.href = 'giris.html'; return; }
+  // Profil zaten tamamsa fala gönder
+  if (data.session.user.user_metadata?.ad) {
+    window.location.href = 'kahve-fali.html';
+  }
+});
+
+// Stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 60; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*5}s;--o:${0.2+Math.random()*0.5};animation-delay:${Math.random()*5}s`;
+  starsEl.appendChild(s);
+}
+
+let seciliCinsiyet = '';
+let seciliIliski = '';
+let mevcutAdim = 1;
+
+function guncellProgress(adim) {
+  mevcutAdim = adim;
+  const metinler = ['Adım 1 / 3 — Adınız', 'Adım 2 / 3 — Doğum Tarihi & Cinsiyet', 'Adım 3 / 3 — İlişki Durumu'];
+  document.getElementById('progressText').textContent = metinler[adim-1];
+
+  [1,2,3].forEach(i => {
+    const dot = document.getElementById(`dot${i}`);
+    dot.className = 'step-dot' + (i < adim ? ' done' : i === adim ? ' active' : '');
+    if (i < 3) {
+      document.getElementById(`line${i}`).className = 'step-line' + (i < adim ? ' done' : '');
+    }
+  });
+}
+
+function gosterAdim(adim) {
+  document.querySelectorAll('.adim').forEach(a => a.classList.remove('active'));
+  document.getElementById(`adim${adim}`).classList.add('active');
+  guncellProgress(adim);
+}
+
+function showToast(msg, type='error') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type}`;
+  setTimeout(() => t.className = 'toast', 3000);
+}
+
+function cinsiyetSec(el, deger) {
+  document.querySelectorAll('.cinsiyet-kart').forEach(k => k.classList.remove('selected'));
+  el.classList.add('selected');
+  seciliCinsiyet = deger;
+}
+
+function iliskiSec(el, deger) {
+  document.querySelectorAll('.iliski-kart').forEach(k => k.classList.remove('selected'));
+  el.classList.add('selected');
+  seciliIliski = deger;
+}
+
+function adim1Ileri() {
+  const ad = document.getElementById('p-ad').value.trim();
+  if (!ad) { showToast('Lütfen adınızı girin.'); return; }
+  gosterAdim(2);
+}
+
+function adim2Ileri() {
+  const gun = document.getElementById('p-gun').value;
+  const ay = document.getElementById('p-ay').value;
+  const yil = document.getElementById('p-yil').value;
+  if (!gun || !ay || !yil) { showToast('Lütfen doğum tarihinizi seçin.'); return; }
+  if (!seciliCinsiyet) { showToast('Lütfen cinsiyetinizi seçin.'); return; }
+  gosterAdim(3);
+}
+
+async function profilTamamla() {
+  if (!seciliIliski) { showToast('Lütfen ilişki durumunuzu seçin.'); return; }
+
+  const btn = document.getElementById('btn-tamamla');
+  btn.disabled = true;
+  btn.textContent = '⏳ Kaydediliyor...';
+
+  const ad = document.getElementById('p-ad').value.trim();
+  const gun = document.getElementById('p-gun').value;
+  const ay = document.getElementById('p-ay').value;
+  const yil = document.getElementById('p-yil').value;
+
+  const { error } = await sb.auth.updateUser({
+    data: {
+      ad,
+      dogum_gunu: gun,
+      dogum_ay: ay,
+      dogum_yil: yil,
+      cinsiyet: seciliCinsiyet,
+      iliski_durumu: seciliIliski,
+      token: 10
+    }
+  });
+
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = '✦ PROFİLİ TAMAMLA ✦';
+    showToast('Hata: ' + error.message);
+    return;
+  }
+
+  // Tamamlandı ekranı
+  document.querySelectorAll('.adim').forEach(a => a.classList.remove('active'));
+  document.getElementById('tamamEkrani').classList.add('visible');
+  document.getElementById('progressText').textContent = '✦ Profil Tamamlandı ✦';
+
+  setTimeout(() => window.location.href = 'kahve-fali.html', 2500);
+}
+
+// Enter desteği
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (mevcutAdim === 1) adim1Ileri();
+  else if (mevcutAdim === 2) adim2Ileri();
+  else if (mevcutAdim === 3) profilTamamla();
+});
+</script>
+</body>
+</html>
