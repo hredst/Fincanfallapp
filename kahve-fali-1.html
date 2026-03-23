@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hatice Nine — Kahve Falı</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --bg: #0d0608;
+  --surface: #1a0d10;
+  --surface2: #241016;
+  --border: #3d1f28;
+  --gold: #c9a84c;
+  --gold2: #e8c97a;
+  --red: #8b1a2a;
+  --red2: #b02235;
+  --text: #f5e6d0;
+  --text-dim: #a08060;
+  --error: #f87171;
+  --success: #86efac;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Crimson Text', serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 0%, rgba(139,26,42,0.2) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 100%, rgba(201,168,76,0.06) 0%, transparent 50%);
+  pointer-events: none; z-index: 0;
+}
+
+.candles-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.cl { position: absolute; border-radius: 50%; animation: flicker var(--d,3s) ease-in-out infinite alternate; }
+.cl1 { width: 350px; height: 350px; background: radial-gradient(circle, rgba(255,140,66,0.1) 0%, transparent 70%); bottom: -80px; left: -80px; --d:2.3s; }
+.cl2 { width: 280px; height: 280px; background: radial-gradient(circle, rgba(255,140,66,0.08) 0%, transparent 70%); bottom: -60px; right: -60px; --d:3.1s; }
+.cl3 { width: 200px; height: 200px; background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%); top: 30%; right: 5%; --d:2.7s; }
+@keyframes flicker { 0% { transform:scale(1); opacity:.8; } 100% { transform:scale(1.15); opacity:1; } }
+
+.stars { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+.star { position: absolute; width: 1.5px; height: 1.5px; background: var(--gold2); border-radius: 50%; animation: twinkle var(--d,3s) ease-in-out infinite; opacity: 0; }
+@keyframes twinkle { 0%,100% { opacity:0; } 50% { opacity:var(--o,.5); } }
+
+/* TOP BAR */
+.topbar {
+  position: relative; z-index: 10;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(180deg, rgba(26,13,16,0.95) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(201,168,76,0.15);
+}
+
+.topbar-logo {
+  display: flex; align-items: center; gap: 10px;
+}
+.topbar-img {
+  width: 38px; height: 38px; border-radius: 50%;
+  border: 1px solid var(--gold); object-fit: cover;
+}
+.topbar-name {
+  font-family: 'Cinzel', serif; font-size: 0.85rem;
+  color: var(--gold); letter-spacing: 0.1em;
+}
+
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.token-goster {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.25);
+  border-radius: 20px; padding: 5px 12px;
+  font-family: 'Cinzel', serif; font-size: 0.78rem;
+  color: var(--gold2);
+}
+.token-sayi { font-size: 1rem; font-weight: 600; }
+
+.kullanici-ad {
+  font-size: 0.82rem; color: var(--text-dim);
+  font-style: italic;
+}
+
+.btn-cikis {
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 3px; color: var(--text-dim);
+  font-family: 'Crimson Text', serif; font-size: 0.78rem;
+  padding: 5px 12px; cursor: pointer; transition: all 0.2s;
+}
+.btn-cikis:hover { border-color: var(--red2); color: var(--error); }
+
+/* ANA CONTAINER */
+.container {
+  position: relative; z-index: 1;
+  max-width: 680px; margin: 0 auto;
+  padding: 30px 20px 80px;
+  animation: fadeUp 0.8s cubic-bezier(.16,1,.3,1) both;
+}
+
+/* BAŞLIK */
+.header { text-align: center; margin-bottom: 32px; }
+
+.hatice-circle {
+  width: 110px; height: 110px; border-radius: 50%;
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 25px rgba(201,168,76,0.35), 0 0 50px rgba(139,26,42,0.2);
+  overflow: hidden; margin: 0 auto 12px;
+}
+.hatice-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+.header-name {
+  font-family: 'Cinzel', serif; font-size: clamp(1.4rem,4vw,1.8rem);
+  font-weight: 700; color: var(--gold);
+  letter-spacing: 0.12em; text-shadow: 0 0 25px rgba(201,168,76,0.3);
+  margin-bottom: 4px;
+}
+.header-sub { font-size: 0.85rem; color: var(--text-dim); font-style: italic; letter-spacing: 0.12em; }
+
+.gold-line { display: flex; align-items: center; gap: 10px; margin: 12px auto; width: fit-content; }
+.gold-line-bar { width: 50px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold)); }
+.gold-line-bar.r { background: linear-gradient(90deg, var(--gold), transparent); }
+.gold-line span { color: var(--gold); font-size: 11px; }
+
+/* KART */
+.card {
+  background: linear-gradient(160deg, var(--surface) 0%, var(--surface2) 100%);
+  border: 1px solid var(--border); border-radius: 4px;
+  padding: 28px 32px; margin-bottom: 16px;
+  box-shadow: 0 16px 50px rgba(0,0,0,0.6), inset 0 1px 0 rgba(201,168,76,0.12);
+  position: relative; overflow: hidden;
+}
+.card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), var(--gold2), var(--gold), transparent); }
+
+/* INPUT */
+.input-label { font-size: 0.68rem; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; margin-bottom: 8px; display: block; font-family: 'Cinzel', serif; }
+
+.name-input {
+  width: 100%; background: rgba(0,0,0,0.4);
+  border: 1px solid var(--border); border-radius: 3px;
+  color: var(--text); font-family: 'Crimson Text', serif;
+  font-size: 1.1rem; padding: 12px 16px; outline: none;
+  transition: all 0.3s; margin-bottom: 20px;
+}
+.name-input:focus { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(201,168,76,0.1); }
+.name-input[readonly] { color: var(--gold2); cursor: default; }
+
+/* UPLOAD */
+.upload-label { font-size: 0.68rem; letter-spacing: 0.2em; color: var(--gold); text-transform: uppercase; margin-bottom: 10px; display: block; font-family: 'Cinzel', serif; }
+
+.upload-area {
+  border: 2px dashed var(--border); border-radius: 4px;
+  padding: 28px 20px; text-align: center;
+  transition: all 0.3s; background: rgba(0,0,0,0.2);
+  position: relative; overflow: hidden; cursor: pointer;
+  margin-bottom: 6px;
+}
+.upload-area:hover { border-color: var(--gold); background: rgba(201,168,76,0.04); }
+.upload-area.has-image { padding: 0; border-style: solid; border-color: rgba(201,168,76,0.4); }
+
+.upload-icon { font-size: 36px; margin-bottom: 8px; display: block; }
+.upload-title { font-family: 'Cinzel', serif; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 4px; letter-spacing: 0.05em; }
+.upload-sub { font-size: 0.75rem; color: #4a2a20; font-style: italic; line-height: 1.5; }
+
+.upload-btns { display: flex; gap: 8px; margin-top: 14px; justify-content: center; flex-wrap: wrap; }
+.upload-btn {
+  padding: 8px 18px; background: rgba(139,26,42,0.15);
+  border: 1px solid rgba(139,26,42,0.4); border-radius: 20px;
+  color: var(--text-dim); font-family: 'Crimson Text', serif;
+  font-size: 0.85rem; cursor: pointer; transition: all 0.2s;
+}
+.upload-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+.preview-wrap { display: none; position: relative; }
+.preview-wrap.visible { display: block; }
+.preview-img { width: 100%; max-height: 260px; object-fit: cover; border-radius: 3px; display: block; }
+.preview-remove { position: absolute; top: 8px; right: 8px; width: 30px; height: 30px; background: rgba(0,0,0,0.7); border: 1px solid var(--border); border-radius: 50%; color: var(--text-dim); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+.preview-remove:hover { color: var(--error); border-color: var(--error); }
+.preview-label { position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.7); border: 1px solid rgba(201,168,76,0.3); border-radius: 12px; padding: 3px 10px; font-size: 0.72rem; color: var(--gold); }
+
+.upload-hint { font-size: 0.72rem; color: #4a2a20; font-style: italic; text-align: center; margin-bottom: 20px; }
+
+#fileInputGallery, #fileInputCamera { display: none; }
+
+/* TOAST */
+.toast { display: none; border-radius: 3px; padding: 11px 14px; margin-bottom: 14px; font-size: 0.9rem; font-style: italic; text-align: center; border-left: 3px solid; }
+.toast.error { display: block; background: rgba(139,26,42,0.2); border-color: var(--error); color: #fca5a5; }
+.toast.success { display: block; background: rgba(134,239,172,0.08); border-color: var(--success); color: var(--success); }
+
+/* ANA BUTON */
+.btn-fal {
+  width: 100%; padding: 16px;
+  background: linear-gradient(135deg, #6b0f1c, var(--red), var(--red2));
+  border: 1px solid rgba(201,168,76,0.3); border-radius: 3px;
+  color: var(--gold2); font-family: 'Cinzel', serif;
+  font-size: 0.9rem; letter-spacing: 0.15em;
+  cursor: pointer; transition: all 0.3s;
+  box-shadow: 0 6px 25px rgba(139,26,42,0.4);
+  position: relative; overflow: hidden;
+}
+.btn-fal::before { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(201,168,76,0.1), transparent); transform: translateX(-100%) skewX(-15deg); transition: transform 0.5s; }
+.btn-fal:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(139,26,42,0.6); border-color: var(--gold); }
+.btn-fal:hover::before { transform: translateX(200%) skewX(-15deg); }
+.btn-fal:active { transform: translateY(0); }
+.btn-fal:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* TOKEN UYARI */
+.token-uyari { text-align: center; padding: 16px; background: rgba(139,26,42,0.15); border: 1px solid rgba(139,26,42,0.3); border-radius: 3px; display: none; }
+.token-uyari.visible { display: block; }
+.token-uyari p { font-size: 0.9rem; color: #fca5a5; font-style: italic; margin-bottom: 8px; }
+.btn-token-al { background: linear-gradient(135deg, var(--red), var(--red2)); border: 1px solid var(--gold); border-radius: 3px; color: var(--gold2); font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.1em; padding: 8px 20px; cursor: pointer; }
+
+/* LOADING */
+.loading-overlay { display: none; text-align: center; padding: 50px 20px; }
+.loading-overlay.visible { display: block; animation: fadeUp 0.5s ease both; }
+.loading-ikon { font-size: 52px; display: block; margin-bottom: 14px; animation: pulse-glow 1.5s ease-in-out infinite; }
+@keyframes pulse-glow { 0%,100% { filter: drop-shadow(0 0 8px rgba(201,168,76,0.3)); transform: scale(1); } 50% { filter: drop-shadow(0 0 25px rgba(201,168,76,0.7)); transform: scale(1.05); } }
+.loading-text { color: var(--text-dim); font-style: italic; font-size: 1rem; }
+.loading-dots span { animation: blink 1.4s infinite; color: var(--gold); }
+.loading-dots span:nth-child(2) { animation-delay:.2s; }
+.loading-dots span:nth-child(3) { animation-delay:.4s; }
+@keyframes blink { 0%,80%,100% { opacity:0; } 40% { opacity:1; } }
+
+/* SONUÇ */
+.result-card {
+  display: none; background: linear-gradient(160deg, #100608, #150a0d);
+  border: 1px solid rgba(201,168,76,0.25); border-radius: 4px;
+  padding: 28px 32px; position: relative; overflow: hidden;
+}
+.result-card.visible { display: block; animation: fadeUp 0.6s cubic-bezier(.16,1,.3,1) both; }
+.result-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--gold), var(--gold2), var(--gold), transparent); }
+
+.result-fincan { width: 100%; max-height: 180px; object-fit: cover; border-radius: 3px; margin-bottom: 18px; border: 1px solid rgba(201,168,76,0.2); display: none; }
+.result-fincan.visible { display: block; }
+
+.result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.result-header-img { width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--gold); object-fit: cover; }
+.result-name { font-family: 'Cinzel', serif; font-size: 0.9rem; color: var(--gold); }
+.result-sub { font-size: 0.75rem; color: var(--text-dim); font-style: italic; }
+
+.result-text { font-size: 1rem; line-height: 1.9; color: var(--text); font-weight: 400; white-space: pre-wrap; }
+
+.typing-cursor { display: inline-block; width: 2px; height: 1em; background: var(--gold); margin-left: 2px; vertical-align: middle; animation: blink-cursor 0.8s step-end infinite; }
+@keyframes blink-cursor { 0%,100% { opacity:1; } 50% { opacity:0; } }
+
+.action-row { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+.btn-action { flex: 1; min-width: 100px; padding: 10px 14px; background: transparent; border: 1px solid var(--border); border-radius: 3px; color: var(--text-dim); font-family: 'Crimson Text', serif; font-size: 0.88rem; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; }
+.btn-action:hover { border-color: var(--gold); color: var(--gold); }
+
+/* FOOTER */
+.footer-note { text-align: center; margin-top: 28px; color: #3d1a14; font-size: 0.72rem; font-style: italic; line-height: 1.6; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+@media (max-width: 480px) { .card, .result-card { padding: 20px 16px; } .topbar { padding: 10px 14px; } }
+</style>
+</head>
+<body>
+
+<div class="candles-bg">
+  <div class="cl cl1"></div>
+  <div class="cl cl2"></div>
+  <div class="cl cl3"></div>
+</div>
+<div class="stars" id="stars"></div>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="topbar-logo">
+    <img src="hatice-nine.png" alt="Hatice Nine" class="topbar-img" onerror="this.style.display='none'"/>
+    <span class="topbar-name">Hatice Nine</span>
+  </div>
+  <div class="topbar-right">
+    <div class="token-goster">
+      🪙 <span class="token-sayi" id="tokenSayi">--</span>
+    </div>
+    <span class="kullanici-ad" id="kullaniciAd"></span>
+    <button class="btn-cikis" onclick="cikisYap()">Çıkış</button>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- BAŞLIK -->
+  <div class="header">
+    <div class="hatice-circle">
+      <img src="hatice-nine.png" alt="Hatice Nine" onerror="this.parentElement.innerHTML='<span style=font-size:60px;line-height:110px;display:block;text-align:center>☕</span>'" />
+    </div>
+    <h1 class="header-name">HATİCE NİNE</h1>
+    <p class="header-sub">☕ Kahve Falı & Kehânet ☕</p>
+    <div class="gold-line">
+      <div class="gold-line-bar"></div>
+      <span>✦</span>
+      <div class="gold-line-bar r"></div>
+    </div>
+  </div>
+
+  <!-- INPUT KARTI -->
+  <div class="card" id="inputCard">
+
+    <span class="input-label">Adınız</span>
+    <input type="text" class="name-input" id="nameInput" placeholder="Adınız..." maxlength="30" readonly />
+
+    <span class="upload-label">Fincanınızın Fotoğrafı</span>
+    <div class="upload-area" id="uploadArea">
+      <div id="uploadPlaceholder">
+        <span class="upload-icon">☕</span>
+        <p class="upload-title">Fincanınızın içini fotoğraflayın</p>
+        <p class="upload-sub">Kahvenizi içtikten sonra fincanı ters çevirip<br>2-3 dakika bekleyin, ardından fotoğraflayın</p>
+        <div class="upload-btns">
+          <button class="upload-btn" onclick="document.getElementById('fileInputCamera').click()">📷 Kamera</button>
+          <button class="upload-btn" onclick="document.getElementById('fileInputGallery').click()">🖼️ Galeri</button>
+        </div>
+      </div>
+      <div class="preview-wrap" id="previewWrap">
+        <img id="previewImg" class="preview-img" src="" alt="Fincan" />
+        <button class="preview-remove" onclick="removeImage(event)">✕</button>
+        <span class="preview-label">✦ Fincanınız</span>
+      </div>
+    </div>
+    <p class="upload-hint">⚠️ Fincanın içini net ve yakından çekmeye çalışın</p>
+
+    <div class="toast" id="errorToast"></div>
+
+    <!-- Token uyarı -->
+    <div class="token-uyari" id="tokenUyari">
+      <p>Tokenınız bitti! Fal bakabilmek için token satın alın.</p>
+      <button class="btn-token-al" onclick="tokenSatin()">✦ TOKEN SATIN AL ✦</button>
+    </div>
+
+    <input type="file" id="fileInputGallery" accept="image/*" onchange="handleFile(event)" />
+    <input type="file" id="fileInputCamera" accept="image/*" capture="environment" onchange="handleFile(event)" />
+
+    <button class="btn-fal" id="falBtn" onclick="startFal()">✦ FALIMA BAK ✦</button>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-overlay" id="loadingCard">
+    <span class="loading-ikon">🔮</span>
+    <p class="loading-text">Hatice Nine falınıza bakıyor<span class="loading-dots"><span>.</span><span>.</span><span>.</span></span></p>
+    <p style="color:#4a2a20;font-size:0.8rem;margin-top:8px;font-style:italic;">Kahvenizin sırları açığa çıkıyor</p>
+  </div>
+
+  <!-- SONUÇ -->
+  <div class="result-card" id="resultCard">
+    <img id="resultThumb" class="result-fincan" src="" alt="Fincan" />
+    <div class="result-header">
+      <img src="hatice-nine.png" alt="" class="result-header-img" onerror="this.style.display='none'" />
+      <div>
+        <div class="result-name" id="resultName"></div>
+        <div class="result-sub">Hatice Nine'nin Yorumu</div>
+      </div>
+    </div>
+    <div class="result-text" id="resultText"></div>
+    <div class="action-row">
+      <button class="btn-action" onclick="newFal()">🔄 Yeni Fal</button>
+      <button class="btn-action" onclick="copyFal(event)">📋 Kopyala</button>
+      <button class="btn-action" onclick="shareWhatsapp()">💬 Paylaş</button>
+    </div>
+  </div>
+
+  <p class="footer-note">✦ Hatice Nine — Yapay zeka destekli kahve falı ✦<br>Eğlence amaçlıdır.</p>
+</div>
+
+<script>
+const { createClient } = supabase;
+const sb = createClient(
+  'https://nyficdvikmdnfvbtasmx.supabase.co',
+  'sb_publishable_83nlZ_hEU7c39NmNwV-meA_f712n4gb'
+);
+
+// Stars
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 60; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  s.style.cssText = `left:${Math.random()*100}%;top:${Math.random()*100}%;--d:${2+Math.random()*5}s;--o:${0.15+Math.random()*0.4};animation-delay:${Math.random()*5}s`;
+  starsEl.appendChild(s);
+}
+
+let currentUser = null;
+let currentToken = 0;
+let imageBase64 = null;
+let imageMimeType = null;
+
+// Kullanıcı kontrolü
+async function initApp() {
+  const { data } = await sb.auth.getSession();
+  if (!data.session) { window.location.href = 'giris.html'; return; }
+
+  currentUser = data.session.user;
+  const meta = currentUser.user_metadata;
+
+  // Profil tamamlanmamışsa
+  if (!meta?.ad) { window.location.href = 'profil-tamamla.html'; return; }
+
+  const ad = meta.ad || '';
+  currentToken = meta.token || 0;
+
+  document.getElementById('nameInput').value = ad;
+  document.getElementById('kullaniciAd').textContent = ad;
+  document.getElementById('tokenSayi').textContent = currentToken;
+
+  if (currentToken <= 0) {
+    document.getElementById('falBtn').style.display = 'none';
+    document.getElementById('tokenUyari').classList.add('visible');
+  }
+}
+
+initApp();
+
+function handleFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  event.target.value = '';
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const result = e.target.result;
+    imageBase64 = result.split(',')[1];
+    imageMimeType = file.type || 'image/jpeg';
+    document.getElementById('previewImg').src = result;
+    document.getElementById('uploadPlaceholder').style.display = 'none';
+    document.getElementById('previewWrap').classList.add('visible');
+    document.getElementById('uploadArea').classList.add('has-image');
+    hideError();
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage(e) {
+  e.stopPropagation();
+  imageBase64 = null; imageMimeType = null;
+  document.getElementById('previewImg').src = '';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('previewWrap').classList.remove('visible');
+  document.getElementById('uploadArea').classList.remove('has-image');
+}
+
+function showError(msg) {
+  const t = document.getElementById('errorToast');
+  t.textContent = msg; t.className = 'toast error';
+}
+function hideError() { document.getElementById('errorToast').className = 'toast'; }
+
+async function startFal() {
+  const name = document.getElementById('nameInput').value.trim();
+  hideError();
+
+  if (!name) { showError('Ad bilgisi bulunamadı.'); return; }
+  if (!imageBase64) { showError('☕ Fincanınızı göremiyorum. Lütfen fotoğraf ekleyiniz.'); return; }
+  if (currentToken <= 0) { showError('Tokenınız bitti!'); return; }
+
+  document.getElementById('inputCard').style.display = 'none';
+  document.getElementById('loadingCard').classList.add('visible');
+
+  try {
+    const meta = currentUser.user_metadata;
+    const yas = meta.yas || '';
+    const cinsiyet = meta.cinsiyet || '';
+    const iliski = meta.iliski_durumu || '';
+
+    const response = await fetch('/.netlify/functions/fal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, imageBase64, imageMimeType, yas, cinsiyet, iliski })
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || 'Hata');
+
+    // Token düş
+    currentToken--;
+    await sb.auth.updateUser({ data: { ...meta, token: currentToken } });
+    document.getElementById('tokenSayi').textContent = currentToken;
+
+    document.getElementById('loadingCard').classList.remove('visible');
+
+    const thumb = document.getElementById('resultThumb');
+    thumb.src = document.getElementById('previewImg').src;
+    thumb.classList.add('visible');
+
+    document.getElementById('resultName').textContent = name + "'in Fincanı";
+    document.getElementById('resultCard').classList.add('visible');
+
+    await typeWriter(data.falText);
+
+  } catch (err) {
+    document.getElementById('loadingCard').classList.remove('visible');
+    document.getElementById('inputCard').style.display = 'block';
+    showError('Bir hata oluştu, lütfen tekrar deneyin.');
+  }
+}
+
+async function typeWriter(text) {
+  const el = document.getElementById('resultText');
+  el.textContent = '';
+  const cursor = document.createElement('span');
+  cursor.className = 'typing-cursor';
+  el.appendChild(cursor);
+  for (let i = 0; i < text.length; i++) {
+    el.insertBefore(document.createTextNode(text[i]), cursor);
+    await new Promise(r => setTimeout(r, 15));
+    if (i % 40 === 0) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  setTimeout(() => cursor.remove(), 1200);
+}
+
+function newFal() {
+  document.getElementById('resultCard').classList.remove('visible');
+  document.getElementById('resultThumb').classList.remove('visible');
+  imageBase64 = null; imageMimeType = null;
+  document.getElementById('previewImg').src = '';
+  document.getElementById('uploadPlaceholder').style.display = 'block';
+  document.getElementById('previewWrap').classList.remove('visible');
+  document.getElementById('uploadArea').classList.remove('has-image');
+  document.getElementById('inputCard').style.display = 'block';
+
+  if (currentToken <= 0) {
+    document.getElementById('falBtn').style.display = 'none';
+    document.getElementById('tokenUyari').classList.add('visible');
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function copyFal(e) {
+  const text = document.getElementById('resultText').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = e.target;
+    btn.textContent = '✓ Kopyalandı';
+    setTimeout(() => btn.textContent = '📋 Kopyala', 2000);
+  });
+}
+
+function shareWhatsapp() {
+  const name = document.getElementById('resultName').textContent;
+  const text = document.getElementById('resultText').textContent.substring(0, 200) + '...';
+  window.open('https://wa.me/?text=' + encodeURIComponent(`☕ ${name}\n\n${text}\n\nHatice Nine - AI Kahve Falı`), '_blank');
+}
+
+async function cikisYap() {
+  await sb.auth.signOut();
+  window.location.href = 'giris.html';
+}
+
+function tokenSatin() {
+  alert('Yakında aktif olacak! 🔮');
+}
+</script>
+</body>
+</html>
