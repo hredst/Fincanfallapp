@@ -10,76 +10,73 @@ exports.handler = async function(event) {
       return { statusCode: 400, body: JSON.stringify({ error: "Eksik bilgi" }) };
     }
 
-    const GEMINI_KEY = process.env.GEMINI_API_KEY;
+    const GROQ_KEY = process.env.GROQ_API_KEY;
 
-    if (!GEMINI_KEY) {
+    if (!GROQ_KEY) {
       return { statusCode: 500, body: JSON.stringify({ error: "API key bulunamadi" }) };
     }
 
-    const prompt = `Sen deneyimli ve mistik bir kahve falcisissin. Kullanici sana kahve fincaninin fotografini gonderiyor.
+    console.log("Groq API'ye istek gonderiliyor...");
+    console.log("Image size:", imageBase64.length);
 
-ONCE gorselin gercekten bir kahve fincani ici olup olmadigini kontrol et.
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GROQ_KEY}`
+      },
+      body: JSON.stringify({
+        model: "meta-llama/llama-4-scout-17b-16e-instruct",
+        max_tokens: 1000,
+        temperature: 0.9,
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Sen deneyimli ve mistik bir kahve falcisissin. Sana bir kahve fincaninin fotografini gonderiyorum.
 
-Eger gorsel bir kahve fincani ici DEGILSE sadece su cumleri yaz:
+ONCE gorseli dikkatlice incele. Gercekten bir kahve fincani ici mi?
+
+Eger kahve fincani ici DEGILSE sadece su cumleri yaz:
 "Sevgili ${name}, fincaninizi goremiyorum. Falinizi okuyabilmem icin lutfen kahve fincaninizin icini fotograflayip gonderin."
 
-Eger gorsel bir kahve fincani ici ISE ${name} adli kisiye ozel mistik, sicak ve umut dolu bir fal oku. Su bolumlere ayir:
+Eger kahve fincani ici ISE fincandaki kahve izlerini, sekilleri ve desenleri gercekten analiz et. Ne goruyorsan onu yorumla. Uydurma, gorsele bak. Su bolumlere ayir:
 
-1. Fincanin genel enerjisi (2 cumle)
-2. Ask ve iliskiler (2-3 cumle)
-3. Is ve kariyer (2-3 cumle)
-4. Yakin gelecek (2-3 cumle)
-5. Falcinin notu - siiirsel kapаnis (1 cumle)
+1. Fincaninda ne goruyorum - gercek gozlemini yaz (2 cumle)
+2. Ask ve iliskiler - bu sekillere gore yorumla (2-3 cumle)  
+3. Is ve kariyer - bu sekillere gore yorumla (2-3 cumle)
+4. Yakin gelecek - bu sekillere gore yorumla (2-3 cumle)
+5. Falcinin notu - siiirsel bir kapаnis (1 cumle)
 
-Turkce yaz. Kisinin adini dogal kullan. Paragraflar arasi bos satir birak.`;
-
-    const requestBody = {
-      contents: [{
-        parts: [
-          { text: prompt },
-          { 
-            inline_data: { 
-              mime_type: imageMimeType || "image/jpeg", 
-              data: imageBase64 
-            } 
+Kisinin adi: ${name}
+Turkce yaz. Adini dogal kullan. Paragraflar arasi bos satir birak.`
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: `data:${imageMimeType || "image/jpeg"};base64,${imageBase64}`
+                }
+              }
+            ]
           }
         ]
-      }],
-      generationConfig: { 
-        maxOutputTokens: 800, 
-        temperature: 0.9 
-      }
-    };
-
-    console.log("Gemini API'ye istek gonderiliyor...");
-    console.log("Image size (base64 length):", imageBase64.length);
-
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${GEMINI_KEY}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestBody)
-      }
-    );
+      })
+    });
 
     const data = await response.json();
-    console.log("Gemini yaniti:", JSON.stringify(data).substring(0, 500));
+    console.log("Groq yaniti:", JSON.stringify(data).substring(0, 300));
 
     if (!response.ok) {
-      console.error("Gemini hata:", data);
-      return { 
-        statusCode: 500, 
-        body: JSON.stringify({ error: "Gemini hatasi: " + (data.error?.message || "Bilinmeyen hata") }) 
+      console.error("Groq hata:", data);
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: "AI hatasi: " + (data.error?.message || "Bilinmeyen hata") })
       };
     }
 
-    if (!data.candidates || !data.candidates[0]) {
-      console.error("Kandidat yok:", data);
-      return { statusCode: 500, body: JSON.stringify({ error: "AI yanit vermedi" }) };
-    }
-
-    const falText = data.candidates[0].content.parts[0].text;
+    const falText = data.choices[0].message.content;
 
     return {
       statusCode: 200,
